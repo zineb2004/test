@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Test FormSubmit</title>
+<style>
+  body { font-family: sans-serif; max-width: 500px; margin: 50px auto; padding: 20px; }
+  input, textarea, button { display: block; width: 100%; padding: 10px; margin: 10px 0; box-sizing: border-box; font-size: 16px; }
+  button { background: #2a835f; color: white; border: none; cursor: pointer; font-weight: bold; }
+  button:hover { background: #1e6147; }
+  #msg { padding: 15px; margin-top: 20px; display: none; }
+  .ok { background: #d4edda; color: #155724; }
+  .err { background: #f8d7da; color: #721c24; }
+</style>
+</head>
+<body>
+
+<h2>Test commande</h2>
+<p>Remplis et clique envoyer. Va voir tes spams après.</p>
+
+<form id="testForm">
+  <input type="text" name="Nom" placeholder="Ton nom" required>
+  <input type="tel" name="Telephone" placeholder="Ton téléphone" required>
+  <textarea name="Message" placeholder="Ta commande" required></textarea>
+  <button type="submit" id="btn">Envoyer</button>
+</form>
+
+<div id="msg"></div>
+
+<script>
+const FORM_EMAIL = "zneb499@gmail.com"; // ⚠️ ton email
+
+document.getElementById("testForm").addEventListener("submit", async function(e) {
+  e.preventDefault();
+  const btn = document.getElementById("btn");
+  const msg = document.getElementById("msg");
+  btn.disabled = true;
+  btn.textContent = "Envoi...";
+  msg.style.display = "none";
+
+  const formData = new FormData(this);
+  formData.append("_subject", "Test commande AZER CABA");
+  formData.append("_captcha", "false");
+  formData.append("_template", "table");
+
+  try {
+    const res = await fetch("https://formsubmit.co/ajax/" + FORM_EMAIL, {
+      method: "POST",
+      body: formData
+    });
+    const data = await res.json();
+    console.log("Réponse FormSubmit:", data);
+
+    if (data.success === "true" || data.success === true) {
+      msg.textContent = "✅ Envoyé ! Va voir ta boîte mail (ET tes SPAMS) pour valider le formulaire.";
+      msg.className = "ok";
+      msg.style.display = "block";
+      this.reset();
+    } else {
+      msg.textContent = "⚠️ Réponse : " + JSON.stringify(data);
+      msg.className = "err";
+      msg.style.display = "block";
+    }
+  } catch (err) {
+    console.error(err);
+    msg.textContent = "❌ Erreur : " + err.message + " — Essaie d'ouvrir ce fichier en http:// pas file://";
+    msg.className = "err";
+    msg.style.display = "block";
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Envoyer";
+  }
+});
+</script>
+</body>
+</html>
